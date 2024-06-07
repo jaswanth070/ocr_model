@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Extracting</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid #000;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        select {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: left;
+            white-space: pre-wrap;
+            height: 200px; /* Fixed height */
+            overflow-y: auto; /* Scrollable if content overflows */
+        }
+
+        #downloadButton {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #downloadButton:hover {
+            background-color: #218838;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .footer-content {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Upload a File</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx" required>
+            <select name="extension" id="extension">
+                <option value="image">Image</option>
+                <option value="pdf">PDF</option>
+                <option value="doc">Document (DOC/DOCX)</option>
+                <!-- <option value="ppt">PowerPoint (PPT/PPTX)</option> -->
+            </select>
+            <button type="submit">Upload</button>
+        </form>
+
+        <div id="loading">Loading...</div>
+        <div id="result"></div>
+        <a id="downloadButton" href="#" download="extracted.txt">Download Extracted Text</a>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>All rights reserved. Designed and developed by <a href="https://www.jaswanthmadiya.cloud/" target="_blank" style="color: #ff0000;">Jaswanth Madiya</a></p>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function () {
+            $('#uploadForm').on('submit', function (event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+
+                $('#loading').show();
+                $('#result').hide();
+                $('#downloadButton').hide();
+
+                $.ajax({
+                    url: '/extract',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        $('#loading').hide();
+                        $('#result').text(data.text).show();
+                        var textFile = new Blob([data.text], { type: 'text/plain' });
+                        var downloadButton = $('#downloadButton');
+                        downloadButton.attr('href', URL.createObjectURL(textFile));
+                        downloadButton.show();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error('Error:', textStatus, errorThrown);
+                        $('#loading').hide();
+                        $('#result').text('File upload failed.').show();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
